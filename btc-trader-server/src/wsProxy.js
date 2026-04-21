@@ -1,9 +1,12 @@
 const WebSocket = require('ws');
+const axios = require('axios');
 
-const BINANCE_WS_BASE = 'wss://demo-ws-api.binance.com/ws-api/v3';
+const REST_BASE = 'https://demo-api.binance.com/api/v3/klines';
+const POLL_INTERVAL_MS = 1000;
 
 /**
  * Attach k-line WebSocket proxy to an existing http.Server.
+ * Polls the Binance REST klines endpoint and pushes updates to connected clients.
  *
  * Clients connect to: ws://localhost:<PORT>/klines?symbol=BTCUSDT&interval=1m
  * Supported intervals: 1s, 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
@@ -23,38 +26,64 @@ function attachKlineProxy(server) {
   });
 
   wss.on('connection', (clientWs, req) => {
+    console.log('[WS] Client connected');
     const url = new URL(req.url, `http://${req.headers.host}`);
-    const symbol = (url.searchParams.get('symbol') || 'BTCUSDT').toLowerCase();
+    const symbol = (url.searchParams.get('symbol') || 'BTCUSDT').toUpperCase();
     const interval = url.searchParams.get('interval') || '1m';
 
-    const binanceUrl = `${BINANCE_WS_BASE}/${symbol}@kline_${interval}`;
-    const binanceWs = new WebSocket(binanceUrl);
+    let lastOpenTime = null;
 
-    binanceWs.on('open', () => {
-      console.log(`[WS] Proxying ${binanceUrl}`);
-    });
+    const timer = setInterval(async () => {
+      if (clientWs.readyState !== WebSocket.OPEN) return;
 
-    binanceWs.on('message', (data) => {
-      if (clientWs.readyState === WebSocket.OPEN) {
-        clientWs.send(data.toString());
+      try {
+        const { data } = await axios.get(REST_BASE, {
+          params: { symbol, interval, limit: 2 },
+        });
+
+        // data is [[openTime, open, high, low, close, volume, closeTime, ...], ...]
+        // last entry is the current (potentially unclosed) candle
+        const raw = data[data.length - 1];
+        const candle = {
+          k: {
+            t: raw[0],  // open time
+            o: raw[1],  // open
+            h: raw[2],  // high
+            l: raw[3],  // low
+            c: raw[4],  // close
+            v: raw[5],  // volume
+            T: raw[6],  // close time
+            x: false,   // REST always returns the current open candle last
+          },
+        };
+
+        // Also emit the previous closed candle once when a new one starts
+        if (lastOpenTime !== null && raw[0] !== lastOpenTime) {
+          const prev = data[data.length - 2];
+          if (prev) {
+            clientWs.send(JSON.stringify({
+              k: {
+                t: prev[0], o: prev[1], h: prev[2], l: prev[3],
+                c: prev[4], v: prev[5], T: prev[6], x: true,
+              },
+            }));
+          }
+        }
+
+        lastOpenTime = raw[0];
+        clientWs.send(JSON.stringify(candle));
+      } catch (err) {
+        console.error('[WS] Poll error:', err.message);
       }
-    });
-
-    binanceWs.on('error', (err) => {
-      console.error('[WS] Binance error:', err.message);
-      clientWs.close(1011, 'Upstream error');
-    });
-
-    binanceWs.on('close', () => {
-      clientWs.close(1000, 'Upstream closed');
-    });
+    }, POLL_INTERVAL_MS);
 
     clientWs.on('close', () => {
-      binanceWs.close();
+      console.log('[WS] Client disconnected');
+      clearInterval(timer);
     });
 
     clientWs.on('error', () => {
-      binanceWs.close();
+      clearInterval(timer);
     });
   });
 
