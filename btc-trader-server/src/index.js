@@ -4,6 +4,7 @@ const cors = require('cors');
 const http = require('http');
 const axios = require('axios');
 const { attachKlineProxy } = require('./wsProxy');
+const { syncTime } = require('./binance');
 const tradeRoutes = require('./routes/trade');
 
 const app = express();
@@ -27,6 +28,11 @@ const server = http.createServer(app);
 attachKlineProxy(server);
 
 const PORT = process.env.PORT || 3000;
+
+syncTime()
+  .then(() => console.log('[INFO] Binance time synced'))
+  .catch(err => console.warn('[WARN] Time sync failed:', err.message));
+
 server.listen(PORT, () => {
   console.log(`BTC Trader server running on http://localhost:${PORT}`);
   console.log(`K-line WebSocket: ws://localhost:${PORT}/klines?symbol=BTCUSDT&interval=1m`);

@@ -1,8 +1,13 @@
 const WebSocket = require('ws');
 const axios = require('axios');
+const https = require('https');
 
 const REST_BASE = 'https://demo-api.binance.com/api/v3/klines';
 const POLL_INTERVAL_MS = 1000;
+
+const httpClient = axios.create({
+  httpsAgent: new https.Agent({ keepAlive: true }),
+});
 
 /**
  * Attach k-line WebSocket proxy to an existing http.Server.
@@ -37,7 +42,7 @@ function attachKlineProxy(server) {
       if (clientWs.readyState !== WebSocket.OPEN) return;
 
       try {
-        const { data } = await axios.get(REST_BASE, {
+        const { data } = await httpClient.get(REST_BASE, {
           params: { symbol, interval, limit: 2 },
         });
 

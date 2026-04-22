@@ -3,6 +3,17 @@ const axios = require('axios');
 
 const BASE_URL = 'https://demo-api.binance.com/api';
 
+let serverTimeOffset = 0;
+
+async function syncTime() {
+  const { data } = await axios.get(`${BASE_URL}/v3/time`);
+  serverTimeOffset = data.serverTime - Date.now();
+}
+
+function now() {
+  return Date.now() + serverTimeOffset;
+}
+
 function sign(queryString) {
   return crypto
     .createHmac('sha256', getSecret())
@@ -11,7 +22,7 @@ function sign(queryString) {
 }
 
 function buildSignedParams(params) {
-  const timestamp = Date.now();
+  const timestamp = now();
   const queryString = new URLSearchParams({ ...params, timestamp }).toString();
   const signature = sign(queryString);
   return `${queryString}&signature=${signature}`;
@@ -65,4 +76,4 @@ async function getAccountInfo() {
   return data;
 }
 
-module.exports = { placeOrder, getOrderHistory, getAccountInfo };
+module.exports = { syncTime, placeOrder, getOrderHistory, getAccountInfo };
