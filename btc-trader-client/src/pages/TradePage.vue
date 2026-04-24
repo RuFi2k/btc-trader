@@ -1,21 +1,38 @@
 <template>
-  <pre>{{ state }}</pre>
+  <div class="page">
+    <div class="status" :class="{ connected: store.connected }">
+      {{ store.connected ? 'Connected' : 'Disconnected' }} · {{ store.symbol }}
+    </div>
+    <CandlestickChart
+      :candles="store.candles.slice(-15)"
+      v-model:interval="interval"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useKlinesStore } from '../stores/klines'
+import CandlestickChart from '../components/CandlestickChart.vue'
 
 const store = useKlinesStore()
 
-const state = computed(() => JSON.stringify({
-  connected: store.connected,
-  symbol: store.symbol,
-  interval: store.interval,
-  candleCount: store.candles.length,
-  candles: store.candles.slice(-15),
-}, null, 2))
+const interval = computed({
+  get: () => store.interval,
+  set: (val) => store.setInterval(val),
+})
 
 onMounted(() => store.connect())
 onUnmounted(() => store.disconnect())
 </script>
+
+<style scoped>
+.status {
+  padding: 8px 16px;
+  font-size: 12px;
+  color: #555;
+  font-family: monospace;
+}
+
+.status.connected { color: #26a69a; }
+</style>

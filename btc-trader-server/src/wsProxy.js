@@ -9,13 +9,6 @@ const httpClient = axios.create({
   httpsAgent: new https.Agent({ keepAlive: true }),
 });
 
-/**
- * Attach k-line WebSocket proxy to an existing http.Server.
- * Polls the Binance REST klines endpoint and pushes updates to connected clients.
- *
- * Clients connect to: ws://localhost:<PORT>/klines?symbol=BTCUSDT&interval=1m
- * Supported intervals: 1s, 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
- */
 function attachKlineProxy(server) {
   const wss = new WebSocket.Server({ noServer: true });
 
@@ -34,53 +27,73 @@ function attachKlineProxy(server) {
     console.log('[WS] Client connected');
     const url = new URL(req.url, `http://${req.headers.host}`);
     const symbol = (url.searchParams.get('symbol') || 'BTCUSDT').toUpperCase();
-    const interval = url.searchParams.get('interval') || '1m';
 
+    let timer = null;
     let lastOpenTime = null;
+    let currentInterval = null;
 
-    const timer = setInterval(async () => {
-      if (clientWs.readyState !== WebSocket.OPEN) return;
+    async function startInterval(interval) {
+      if (timer) clearInterval(timer);
+      lastOpenTime = null;
+      currentInterval = interval;
+
+      console.log(`[WS] Starting interval: ${interval}`);
 
       try {
-        const { data } = await httpClient.get(REST_BASE, {
-          params: { symbol, interval, limit: 2 },
+        const { data: history } = await httpClient.get(REST_BASE, {
+          params: { symbol, interval, limit: 15 },
         });
-
-        // data is [[openTime, open, high, low, close, volume, closeTime, ...], ...]
-        // last entry is the current (potentially unclosed) candle
-        const raw = data[data.length - 1];
-        const candle = {
-          k: {
-            t: raw[0],  // open time
-            o: raw[1],  // open
-            h: raw[2],  // high
-            l: raw[3],  // low
-            c: raw[4],  // close
-            v: raw[5],  // volume
-            T: raw[6],  // close time
-            x: false,   // REST always returns the current open candle last
-          },
-        };
-
-        // Also emit the previous closed candle once when a new one starts
-        if (lastOpenTime !== null && raw[0] !== lastOpenTime) {
-          const prev = data[data.length - 2];
-          if (prev) {
+        if (clientWs.readyState === WebSocket.OPEN) {
+          for (let i = 0; i < history.length; i++) {
+            const raw = history[i];
+            const isLast = i === history.length - 1;
             clientWs.send(JSON.stringify({
-              k: {
-                t: prev[0], o: prev[1], h: prev[2], l: prev[3],
-                c: prev[4], v: prev[5], T: prev[6], x: true,
-              },
+              k: { t: raw[0], o: raw[1], h: raw[2], l: raw[3], c: raw[4], v: raw[5], T: raw[6], x: !isLast },
             }));
           }
         }
-
-        lastOpenTime = raw[0];
-        clientWs.send(JSON.stringify(candle));
       } catch (err) {
-        console.error('[WS] Poll error:', err.message);
+        console.error('[WS] History fetch error:', err.message);
       }
-    }, POLL_INTERVAL_MS);
+
+      timer = setInterval(async () => {
+        if (clientWs.readyState !== WebSocket.OPEN) return;
+        try {
+          const { data } = await httpClient.get(REST_BASE, {
+            params: { symbol, interval: currentInterval, limit: 2 },
+          });
+
+          const raw = data[data.length - 1];
+
+          if (lastOpenTime !== null && raw[0] !== lastOpenTime) {
+            const prev = data[data.length - 2];
+            if (prev) {
+              clientWs.send(JSON.stringify({
+                k: { t: prev[0], o: prev[1], h: prev[2], l: prev[3], c: prev[4], v: prev[5], T: prev[6], x: true },
+              }));
+            }
+          }
+
+          lastOpenTime = raw[0];
+          clientWs.send(JSON.stringify({
+            k: { t: raw[0], o: raw[1], h: raw[2], l: raw[3], c: raw[4], v: raw[5], T: raw[6], x: false },
+          }));
+        } catch (err) {
+          console.error('[WS] Poll error:', err.message);
+        }
+      }, POLL_INTERVAL_MS);
+    }
+
+    clientWs.on('message', (data) => {
+      try {
+        const msg = JSON.parse(data.toString());
+        if (msg.type === 'SET_INTERVAL' && msg.interval) {
+          startInterval(msg.interval);
+        }
+      } catch {
+        // ignore malformed messages
+      }
+    });
 
     clientWs.on('close', () => {
       console.log('[WS] Client disconnected');

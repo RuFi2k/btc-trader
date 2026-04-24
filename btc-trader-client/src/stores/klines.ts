@@ -8,17 +8,26 @@ const MAX_CANDLES = 500
 export const useKlinesStore = defineStore('klines', () => {
   const candles = ref<KlineCandle[]>([])
   const symbol = ref('BTCUSDT')
-  const interval = ref('1s')
+  const interval = ref('1m')
   const connected = ref(false)
 
   let ws: WebSocket | null = null
 
+  function sendInterval(newInterval: string) {
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'SET_INTERVAL', interval: newInterval }))
+    }
+  }
+
   function connect() {
     if (ws) ws.close()
 
-    ws = new WebSocket(`${WS_URL}?symbol=${symbol.value}&interval=${interval.value}`)
+    ws = new WebSocket(`${WS_URL}?symbol=${symbol.value}`)
 
-    ws.onopen = () => { connected.value = true }
+    ws.onopen = () => {
+      connected.value = true
+      sendInterval(interval.value)
+    }
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data)
@@ -62,7 +71,7 @@ export const useKlinesStore = defineStore('klines', () => {
   function setInterval(newInterval: string) {
     interval.value = newInterval
     candles.value = []
-    connect()
+    sendInterval(newInterval)
   }
 
   return { candles, symbol, interval, connected, connect, disconnect, setInterval }
