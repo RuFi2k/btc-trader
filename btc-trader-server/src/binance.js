@@ -76,4 +76,22 @@ async function getAccountInfo() {
   return data;
 }
 
-module.exports = { syncTime, placeOrder, getOrderHistory, getAccountInfo };
+async function getOpenOrders() {
+  const query = buildSignedParams({ symbol: 'BTCUSDT' });
+  const { data } = await axios.get(
+    `${BASE_URL}/v3/openOrders?${query}`,
+    { headers: authHeaders() }
+  );
+  return data;
+}
+
+async function cancelOrder(orderId) {
+  const query = buildSignedParams({ symbol: 'BTCUSDT', orderId });
+  const { data } = await axios.delete(
+    `${BASE_URL}/v3/order?${query}`,
+    { headers: authHeaders() }
+  );
+  return data;
+}
+
+module.exports = { syncTime, placeOrder, getOrderHistory, getAccountInfo, getOpenOrders, cancelOrder };

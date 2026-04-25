@@ -7,6 +7,8 @@
       :candles="store.candles.slice(-15)"
       v-model:interval="interval"
     />
+    <TradeControls />
+    <OpenOrders />
   </div>
 </template>
 
@@ -14,6 +16,8 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useKlinesStore } from '../stores/klines'
 import CandlestickChart from '../components/CandlestickChart.vue'
+import TradeControls from '../components/TradeControls.vue'
+import OpenOrders from '../components/OpenOrders.vue'
 
 const store = useKlinesStore()
 

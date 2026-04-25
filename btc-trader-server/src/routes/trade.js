@@ -1,5 +1,5 @@
 const express = require('express');
-const { placeOrder, getOrderHistory, getAccountInfo } = require('../binance');
+const { placeOrder, getOrderHistory, getAccountInfo, getOpenOrders, cancelOrder } = require('../binance');
 
 const router = express.Router();
 
@@ -52,6 +52,26 @@ router.get('/account', async (req, res) => {
     // Return only BTC and USDT balances for brevity
     const balances = account.balances.filter(b => ['BTC', 'USDT'].includes(b.asset));
     res.json({ balances, makerCommission: account.makerCommission, takerCommission: account.takerCommission });
+  } catch (err) {
+    res.status(err.response?.status || 500).json(err.response?.data || { error: err.message });
+  }
+});
+
+// GET /api/trade/open-orders
+router.get('/open-orders', async (req, res) => {
+  try {
+    const orders = await getOpenOrders();
+    res.json(orders);
+  } catch (err) {
+    res.status(err.response?.status || 500).json(err.response?.data || { error: err.message });
+  }
+});
+
+// DELETE /api/trade/order/:orderId
+router.delete('/order/:orderId', async (req, res) => {
+  try {
+    const result = await cancelOrder(req.params.orderId);
+    res.json(result);
   } catch (err) {
     res.status(err.response?.status || 500).json(err.response?.data || { error: err.message });
   }
