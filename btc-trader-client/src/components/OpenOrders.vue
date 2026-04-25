@@ -2,18 +2,15 @@
   <div class="open-orders">
     <div class="header">
       <span class="title">Open Orders</span>
-      <button class="refresh-btn" :disabled="store.loading" @click="store.fetchOpenOrders()">↻</button>
+      <button class="refresh-btn" :disabled="store.loading" @click="store.fetchOpenOrders()">
+        Refresh
+      </button>
     </div>
 
     <p v-if="store.loading" class="hint">Loading…</p>
     <p v-else-if="store.error" class="hint error">{{ store.error }}</p>
     <p v-else-if="!store.orders.length" class="hint">No open orders.</p>
-    <OpenOrdersTable
-      v-else
-      :orders="store.orders"
-      :cancelling="cancelling"
-      @cancel="cancel"
-    />
+    <OpenOrdersTable v-else :orders="store.orders" :cancelling="cancelling" @cancel="cancel" />
   </div>
 </template>
 
@@ -60,8 +57,12 @@ onMounted(() => store.fetchOpenOrders())
   line-height: 1;
 }
 
-.refresh-btn:hover:not(:disabled) { color: #aaa; }
-.refresh-btn:disabled { opacity: 0.4; }
+.refresh-btn:hover:not(:disabled) {
+  color: #aaa;
+}
+.refresh-btn:disabled {
+  opacity: 0.4;
+}
 
 .hint {
   font-size: 12px;
@@ -69,5 +70,7 @@ onMounted(() => store.fetchOpenOrders())
   padding: 8px 0;
 }
 
-.hint.error { color: #ef5350; }
+.hint.error {
+  color: #ef5350;
+}
 </style>

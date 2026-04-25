@@ -65,12 +65,29 @@ tr:last-child td {
   font-family: monospace;
 }
 
-.side.buy  { color: #26a69a; font-weight: 600; }
-.side.sell { color: #ef5350; font-weight: 600; }
+.side.buy {
+  color: #26a69a;
+  font-weight: 600;
+}
+.side.sell {
+  color: #ef5350;
+  font-weight: 600;
+}
 
-.status-badge { font-size: 12px; text-transform: capitalize; }
-.status-badge.filled           { color: #26a69a; }
-.status-badge.canceled         { color: #888; }
-.status-badge.new              { color: #f0b90b; }
-.status-badge.partially_filled { color: #fb8c00; }
+.status-badge {
+  font-size: 12px;
+  text-transform: capitalize;
+}
+.status-badge.filled {
+  color: #26a69a;
+}
+.status-badge.canceled {
+  color: #888;
+}
+.status-badge.new {
+  color: #f0b90b;
+}
+.status-badge.partially_filled {
+  color: #fb8c00;
+}
 </style>

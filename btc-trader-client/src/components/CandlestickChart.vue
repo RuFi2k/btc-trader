@@ -6,7 +6,9 @@
         :key="iv"
         :class="['interval-btn', { active: iv === interval }]"
         @click="$emit('update:interval', iv)"
-      >{{ iv }}</button>
+      >
+        {{ iv }}
+      </button>
     </div>
 
     <div v-if="!candles.length" class="empty">Waiting for data…</div>
@@ -47,8 +49,8 @@ const props = defineProps<{
 
 defineEmits<{ (e: 'update:interval', val: string): void }>()
 
-const minLow  = computed(() => Math.min(...props.candles.map(c => parseFloat(c.low))))
-const maxHigh = computed(() => Math.max(...props.candles.map(c => parseFloat(c.high))))
+const minLow = computed(() => Math.min(...props.candles.map((c) => parseFloat(c.low))))
+const maxHigh = computed(() => Math.max(...props.candles.map((c) => parseFloat(c.high))))
 
 const chartMin = computed(() => minLow.value)
 const chartMax = computed(() => maxHigh.value)
@@ -67,7 +69,7 @@ function candleLimitsStyle(c: KlineCandle) {
   const low = parseFloat(c.low)
   return {
     top: `${pct(high)}%`,
-    height: `${Math.max((high - low) / range.value * 100, 0.5)}%`,
+    height: `${Math.max(((high - low) / range.value) * 100, 0.5)}%`,
   }
 }
 
@@ -78,7 +80,7 @@ function bodyStyle(c: KlineCandle) {
   const bot = Math.min(open, close)
   return {
     top: `${pct(top)}%`,
-    height: `${Math.max((top - bot) / range.value * 100, 0.5)}%`,
+    height: `${Math.max(((top - bot) / range.value) * 100, 0.5)}%`,
   }
 }
 
@@ -116,8 +118,14 @@ function fmt(price: number): string {
   cursor: pointer;
 }
 
-.interval-btn:hover  { border-color: #555; color: #ccc; }
-.interval-btn.active { border-color: #f0b90b; color: #f0b90b; }
+.interval-btn:hover {
+  border-color: #555;
+  color: #ccc;
+}
+.interval-btn.active {
+  border-color: #f0b90b;
+  color: #f0b90b;
+}
 
 .empty {
   color: #555;
@@ -171,8 +179,12 @@ function fmt(price: number): string {
   min-height: 1px;
 }
 
-.body.bull { background: #26a69a; }
-.body.bear { background: #ef5350; }
+.body.bull {
+  background: #26a69a;
+}
+.body.bear {
+  background: #ef5350;
+}
 
 .current-price-line {
   position: absolute;
@@ -193,6 +205,12 @@ function fmt(price: number): string {
   white-space: nowrap;
 }
 
-.current-price-label.bull { background: #26a69a; color: #000; }
-.current-price-label.bear { background: #ef5350; color: #000; }
+.current-price-label.bull {
+  background: #26a69a;
+  color: #000;
+}
+.current-price-label.bear {
+  background: #ef5350;
+  color: #000;
+}
 </style>

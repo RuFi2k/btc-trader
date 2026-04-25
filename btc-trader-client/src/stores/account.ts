@@ -8,16 +8,16 @@ export const useAccountStore = defineStore('account', () => {
 
   async function fetchBalance() {
     try {
-      const res  = await fetch(`${API_URL}/account`)
+      const res = await fetch(`${API_URL}/account`)
       const data = await res.json()
-      const btc  = data.balances.find((b: { asset: string }) => b.asset === 'BTC')
+      const btc = data.balances.find((b: { asset: string }) => b.asset === 'BTC')
       const usdt = data.balances.find((b: { asset: string }) => b.asset === 'USDT')
       balance.value = {
-        BTC:  parseFloat(btc?.free  ?? '0').toFixed(6),
+        BTC: parseFloat(btc?.free ?? '0').toFixed(6),
         USDT: parseFloat(usdt?.free ?? '0').toFixed(2),
       }
     } catch (e) {
-      console.error('Unknown error in fetchBalance():', e);
+      console.error('Unknown error in fetchBalance():', e)
     }
   }
 

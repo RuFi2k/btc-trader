@@ -3,10 +3,7 @@
     <div class="status" :class="{ connected: store.connected }">
       {{ store.connected ? 'Connected' : 'Disconnected' }} · {{ store.symbol }}
     </div>
-    <CandlestickChart
-      :candles="store.candles.slice(-15)"
-      v-model:interval="interval"
-    />
+    <CandlestickChart :candles="store.candles.slice(-15)" v-model:interval="interval" />
     <TradeControls />
     <OpenOrders />
   </div>
@@ -38,5 +35,7 @@ onUnmounted(() => store.disconnect())
   font-family: monospace;
 }
 
-.status.connected { color: #26a69a; }
+.status.connected {
+  color: #26a69a;
+}
 </style>

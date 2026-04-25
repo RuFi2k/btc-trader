@@ -14,7 +14,6 @@ import NavOverlay from './components/NavOverlay.vue'
   box-sizing: border-box;
 }
 
-
 body {
   background: #0d0d0d;
   color: #fff;

@@ -6,9 +6,9 @@ import { useAccountStore } from './account'
 const API_URL = 'http://localhost:3000/api/trade'
 
 export const useOpenOrdersStore = defineStore('openOrders', () => {
-  const orders  = ref<Order[]>([])
+  const orders = ref<Order[]>([])
   const loading = ref(false)
-  const error   = ref<string | null>(null)
+  const error = ref<string | null>(null)
 
   async function fetchOpenOrders() {
     loading.value = true

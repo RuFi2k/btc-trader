@@ -21,7 +21,9 @@
   color: #aaa;
   font-size: 14px;
   font-weight: 500;
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
 }
 
 .nav-tab:hover {

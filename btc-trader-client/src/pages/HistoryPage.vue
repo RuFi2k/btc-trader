@@ -26,5 +26,7 @@ onMounted(() => store.fetchHistory())
   font-size: 14px;
 }
 
-.status.error { color: #ef5350; }
+.status.error {
+  color: #ef5350;
+}
 </style>

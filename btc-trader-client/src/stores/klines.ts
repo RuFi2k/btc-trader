@@ -32,8 +32,13 @@ export const useKlinesStore = defineStore('klines', () => {
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data)
       const k = msg.k as {
-        t: number; T: number
-        o: string; h: string; l: string; c: string; v: string
+        t: number
+        T: number
+        o: string
+        h: string
+        l: string
+        c: string
+        v: string
         x: boolean
       }
 
@@ -59,8 +64,12 @@ export const useKlinesStore = defineStore('klines', () => {
       }
     }
 
-    ws.onclose = () => { connected.value = false }
-    ws.onerror = () => { connected.value = false }
+    ws.onclose = () => {
+      connected.value = false
+    }
+    ws.onerror = () => {
+      connected.value = false
+    }
   }
 
   function disconnect() {

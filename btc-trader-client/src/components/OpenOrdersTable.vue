@@ -18,7 +18,9 @@
             class="cancel-btn"
             :disabled="cancelling === order.orderId"
             @click="$emit('cancel', order.orderId)"
-          >{{ cancelling === order.orderId ? '…' : 'Cancel' }}</button>
+          >
+            {{ cancelling === order.orderId ? '…' : 'Cancel' }}
+          </button>
         </td>
       </tr>
     </tbody>
@@ -57,12 +59,22 @@ td {
   color: #ccc;
 }
 
-tr:last-child td { border-bottom: none; }
+tr:last-child td {
+  border-bottom: none;
+}
 
-.mono { font-family: monospace; }
+.mono {
+  font-family: monospace;
+}
 
-.side.buy  { color: #26a69a; font-weight: 600; }
-.side.sell { color: #ef5350; font-weight: 600; }
+.side.buy {
+  color: #26a69a;
+  font-weight: 600;
+}
+.side.sell {
+  color: #ef5350;
+  font-weight: 600;
+}
 
 .cancel-btn {
   padding: 3px 10px;
@@ -74,6 +86,12 @@ tr:last-child td { border-bottom: none; }
   cursor: pointer;
 }
 
-.cancel-btn:hover:not(:disabled) { border-color: #ef5350; color: #ef5350; }
-.cancel-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.cancel-btn:hover:not(:disabled) {
+  border-color: #ef5350;
+  color: #ef5350;
+}
+.cancel-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 </style>

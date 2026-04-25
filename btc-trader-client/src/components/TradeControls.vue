@@ -1,8 +1,12 @@
 <template>
   <div class="trade-controls">
     <div v-if="accountStore.balance" class="balance">
-      <span class="balance-item"><span class="asset">BTC</span> {{ accountStore.balance.BTC }}</span>
-      <span class="balance-item"><span class="asset">USDT</span> {{ accountStore.balance.USDT }}</span>
+      <span class="balance-item"
+        ><span class="asset">BTC</span> {{ accountStore.balance.BTC }}</span
+      >
+      <span class="balance-item"
+        ><span class="asset">USDT</span> {{ accountStore.balance.USDT }}</span
+      >
     </div>
 
     <div class="row">
@@ -10,11 +14,15 @@
         <button
           :class="['toggle-btn', { active: orderType === 'MARKET' }]"
           @click="orderType = 'MARKET'"
-        >Market</button>
+        >
+          Market
+        </button>
         <button
           :class="['toggle-btn', { active: orderType === 'LIMIT' }]"
           @click="orderType = 'LIMIT'"
-        >Limit</button>
+        >
+          Limit
+        </button>
       </div>
     </div>
 
@@ -135,8 +143,13 @@ async function submit(side: 'BUY' | 'SELL') {
   cursor: pointer;
 }
 
-.toggle-btn:hover { color: #ccc; }
-.toggle-btn.active { background: #2a2a2a; color: #fff; }
+.toggle-btn:hover {
+  color: #ccc;
+}
+.toggle-btn.active {
+  background: #2a2a2a;
+  color: #fff;
+}
 
 .field {
   display: flex;
@@ -165,7 +178,9 @@ async function submit(side: 'BUY' | 'SELL') {
   border-color: #555;
 }
 
-.field input::placeholder { color: #444; }
+.field input::placeholder {
+  color: #444;
+}
 
 .action-btn {
   flex: 1;
@@ -177,10 +192,19 @@ async function submit(side: 'BUY' | 'SELL') {
   cursor: pointer;
 }
 
-.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-.action-btn.buy  { background: #26a69a; color: #000; }
-.action-btn.sell { background: #ef5350; color: #000; }
+.action-btn.buy {
+  background: #26a69a;
+  color: #000;
+}
+.action-btn.sell {
+  background: #ef5350;
+  color: #000;
+}
 
 .feedback {
   font-size: 12px;
@@ -188,8 +212,14 @@ async function submit(side: 'BUY' | 'SELL') {
   border-radius: 5px;
 }
 
-.feedback.success { background: #1a2e2c; color: #26a69a; }
-.feedback.error   { background: #2e1a1a; color: #ef5350; }
+.feedback.success {
+  background: #1a2e2c;
+  color: #26a69a;
+}
+.feedback.error {
+  background: #2e1a1a;
+  color: #ef5350;
+}
 
 .balance {
   display: flex;
